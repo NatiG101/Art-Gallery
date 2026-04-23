@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Nina's Art Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- important for mobile scaling -->
   <style>
     body {
       margin: 0;
@@ -75,13 +76,16 @@
       display: none;
     }
 
-    /* 📱 Mobile devices: make pictures fill the screen */
-    @media only screen and (max-width: 768px) {
+    /* 📱 Mobile devices: force full screen images */
+    @media only screen and (max-device-width: 1024px) {
       .picture {
         width: 100vw;
         height: 100vh;
         max-height: 100vh;
-        object-fit: cover; /* fill screen without distortion */
+        object-fit: cover; /* fill screen */
+      }
+      #welcome, #thankyou {
+        font-size: 3em; /* smaller text so it fits nicely on mobile */
       }
     }
   </style>
