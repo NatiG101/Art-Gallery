@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <title>Nina's Art Gallery</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- important for mobile scaling -->
+  <!-- Critical for mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
       margin: 0;
@@ -76,16 +77,15 @@
       display: none;
     }
 
-    /* 📱 Mobile devices: force full screen images */
-    @media only screen and (max-device-width: 1024px) {
+    /* 📱 Force full screen images on mobile */
+    @media (pointer: coarse) {
       .picture {
         width: 100vw;
         height: 100vh;
-        max-height: 100vh;
         object-fit: cover; /* fill screen */
       }
       #welcome, #thankyou {
-        font-size: 3em; /* smaller text so it fits nicely on mobile */
+        font-size: 3em; /* smaller text for mobile */
       }
     }
   </style>
@@ -185,7 +185,7 @@
           bgMusic.pause();
           setTimeout(() => {
             window.close();
-          }, 3000); // show thank you for 3s before closing
+          }, 2000); // show thank you for 3s before closing
         }
       }, 300);
     }
