@@ -29,8 +29,8 @@
       transition: opacity 2s ease;
     }
 
-    #welcome { opacity: 1; } /* show at start */
-    #thankyou { display: none; } /* hidden until end */
+    #welcome { opacity: 1; }
+    #thankyou { display: none; }
 
     @keyframes wave {
       0% { transform: translate(-50%, -50%) rotate(0deg); }
@@ -44,7 +44,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 60vw;
+      width: 60vw;   /* default for PC */
       height: auto;
       max-height: 80vh;
       transform: translate(-50%, -50%);
@@ -74,13 +74,23 @@
       outline: none;
       display: none;
     }
+
+    /* 📱 Mobile devices: make pictures fill the screen */
+    @media only screen and (max-width: 768px) {
+      .picture {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        object-fit: cover; /* fill screen without distortion */
+      }
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="welcome">Welcome to Nina's Art Gallery</div>
   <div id="thankyou">Thank you for watching</div>
-  <button id="startBtn" class="btn">Let's Start</button>
+  <button id="startBtn" class="btn">Start Slideshow</button>
   <button id="popBtn" class="btn">Pause Slideshow</button>
 
   <audio id="bgMusic" loop>
@@ -158,22 +168,20 @@
 
     // Finale: show thank you, fade music, close page
     function endShow() {
-      popping = false; // stop slideshow completely
-      popBtn.style.display = "none"; // hide pause/resume button
+      popping = false;
+      popBtn.style.display = "none";
       thankyou.style.display = "block";
       thankyou.style.opacity = 1;
 
-      // Fade out music volume
       let fadeInterval = setInterval(() => {
         if (bgMusic.volume > 0.05) {
           bgMusic.volume -= 0.05;
         } else {
           clearInterval(fadeInterval);
           bgMusic.pause();
-          // Close page after short delay
           setTimeout(() => {
             window.close();
-          }, 1000);
+          }, 3000); // show thank you for 3s before closing
         }
       }, 300);
     }
