@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nina's Art Gallery</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #222, #444);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Great Vibes', cursive;
+    }
+
+    #welcome, #thankyou {
+      font-size: 5em;
+      color: #ffcc00;
+      text-align: center;
+      text-shadow: 2px 2px 12px rgba(0,0,0,0.7);
+      animation: wave 2s infinite ease-in-out;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    #welcome { opacity: 1; } /* show at start */
+    #thankyou { display: none; } /* hidden until end */
+
+    @keyframes wave {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      25% { transform: translate(-50%, -50%) rotate(3deg); }
+      50% { transform: translate(-50%, -50%) rotate(0deg); }
+      75% { transform: translate(-50%, -50%) rotate(-3deg); }
+      100% { transform: translate(-50%, -50%) rotate(0deg); }
+    }
+
+    .picture {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60vw;
+      height: auto;
+      max-height: 80vh;
+      transform: translate(-50%, -50%);
+      object-fit: contain;
+      opacity: 0;
+      animation: fadeInOut 6s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+      20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .btn {
+      position: fixed;
+      bottom: 20px;
+      background: #ffcc00;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      outline: none;
+      display: none;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="welcome">Welcome to Nina's Art Gallery</div>
+  <div id="thankyou">Thank you for watching</div>
+  <button id="startBtn" class="btn">Let's Start</button>
+  <button id="popBtn" class="btn">Pause Slideshow</button>
+
+  <audio id="bgMusic" loop>
+    <source src="flower.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const popBtn = document.getElementById('popBtn');
+    const welcome = document.getElementById('welcome');
+    const thankyou = document.getElementById('thankyou');
+    const bgMusic = document.getElementById('bgMusic');
+
+    const images = [
+      "1.jpg","2.jpg","3.jpg","4.jpg","5.jpg",
+      "6.jpg","7.jpg","8.jpg","9.jpg","10.jpg",
+      "11.jpg","12.jpg","13.jpg","14.jpg","15.jpg",
+      "16.jpg","17.jpg","18.jpg","19.jpg","20.jpg",
+      "21.jpg","22.jpg","23.jpg","24.jpg","25.jpg",
+      "26.jpg"
+    ];
+
+    let popping = true;
+    let index = 0;
+    let shownCount = 0;
+
+    function popPicture() {
+      if (shownCount >= images.length) {
+        endShow();
+        return;
+      }
+      const img = document.createElement('img');
+      img.src = images[index];
+      img.className = 'picture';
+      index = (index + 1) % images.length;
+      shownCount++;
+      document.body.appendChild(img);
+      setTimeout(() => { img.remove(); }, 6000);
+    }
+
+    function autoPop() {
+      if (popping) popPicture();
+      setTimeout(autoPop, 6000);
+    }
+
+    // Show welcome first, then reveal Start button
+    setTimeout(() => {
+      welcome.style.opacity = 0;
+      setTimeout(() => {
+        startBtn.style.display = "block";
+      }, 2000);
+    }, 4000);
+
+    // Start slideshow + music when Start button clicked
+    startBtn.addEventListener('click', () => {
+      startBtn.style.display = "none";
+      popBtn.style.display = "block";
+      autoPop();
+      bgMusic.volume = 1;
+      bgMusic.play();
+    });
+
+    // Pause/Resume slideshow AND music
+    popBtn.addEventListener('click', () => {
+      popping = !popping;
+      if (popping) {
+        popBtn.textContent = "Pause Slideshow";
+        bgMusic.play();
+      } else {
+        popBtn.textContent = "Resume Slideshow";
+        bgMusic.pause();
+      }
+    });
+
+    // Finale: show thank you, fade music, close page
+    function endShow() {
+      popping = false; // stop slideshow completely
+      popBtn.style.display = "none"; // hide pause/resume button
+      thankyou.style.display = "block";
+      thankyou.style.opacity = 1;
+
+      // Fade out music volume
+      let fadeInterval = setInterval(() => {
+        if (bgMusic.volume > 0.05) {
+          bgMusic.volume -= 0.05;
+        } else {
+          clearInterval(fadeInterval);
+          bgMusic.pause();
+          // Close page after short delay
+          setTimeout(() => {
+            window.close();
+          }, 1000);
+        }
+      }, 300);
+    }
+  </script>
+</body>
+</html>
