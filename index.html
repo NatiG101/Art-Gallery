@@ -3,13 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <title>Nina's Art Gallery</title>
-  <!-- Critical for mobile scaling -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
       margin: 0;
       height: 100vh;
-      background: linear-gradient(135deg, #222, #444);
+      background: #ffffff; /* ✅ White background */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,9 +18,9 @@
 
     #welcome, #thankyou {
       font-size: 5em;
-      color: #ffcc00;
+      color: #ff3366; /* brighter accent color on white */
       text-align: center;
-      text-shadow: 2px 2px 12px rgba(0,0,0,0.7);
+      text-shadow: 2px 2px 12px rgba(0,0,0,0.2);
       animation: wave 2s infinite ease-in-out;
       position: absolute;
       top: 50%;
@@ -65,27 +64,28 @@
     .btn {
       position: fixed;
       bottom: 20px;
-      background: #ffcc00;
+      background: #ff3366;
+      color: #fff;
       border: none;
       padding: 12px 20px;
       border-radius: 8px;
       font-size: 1rem;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       z-index: 1000;
       outline: none;
       display: none;
     }
 
-    /* 📱 Force full screen images on mobile */
+    /* 📱 Mobile devices: force full screen images */
     @media (pointer: coarse) {
       .picture {
         width: 100vw;
         height: 100vh;
-        object-fit: cover; /* fill screen */
+        object-fit: cover;
       }
       #welcome, #thankyou {
-        font-size: 3em; /* smaller text for mobile */
+        font-size: 3em;
       }
     }
   </style>
@@ -141,7 +141,6 @@
       setTimeout(autoPop, 6000);
     }
 
-    // Show welcome first, then reveal Start button
     setTimeout(() => {
       welcome.style.opacity = 0;
       setTimeout(() => {
@@ -149,7 +148,6 @@
       }, 2000);
     }, 4000);
 
-    // Start slideshow + music when Start button clicked
     startBtn.addEventListener('click', () => {
       startBtn.style.display = "none";
       popBtn.style.display = "block";
@@ -158,7 +156,6 @@
       bgMusic.play();
     });
 
-    // Pause/Resume slideshow AND music
     popBtn.addEventListener('click', () => {
       popping = !popping;
       if (popping) {
@@ -170,7 +167,6 @@
       }
     });
 
-    // Finale: show thank you, fade music, close page
     function endShow() {
       popping = false;
       popBtn.style.display = "none";
@@ -185,7 +181,7 @@
           bgMusic.pause();
           setTimeout(() => {
             window.close();
-          }, 2000); // show thank you for 3s before closing
+          }, 3000);
         }
       }, 300);
     }
