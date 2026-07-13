@@ -4,111 +4,386 @@
   <meta charset="utf-8" />
   <title>Nina's Photo Gallery</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- Premium Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
   <style>
-    body {
+    :root {
+      --bg-color: #0a0a0c;
+      --accent-color: #ff4a7d;
+      --glass-bg: rgba(18, 18, 22, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
       height: 100vh;
-      background: #ffffff; /* ✅ White background */
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-      font-family: 'Great Vibes', cursive;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    #welcome, #thankyou {
-      font-size: 5em;
-      color: #ff3366; /* brighter accent color on white */
-      text-align: center;
-      text-shadow: 2px 2px 12px rgba(0,0,0,0.2);
-      animation: wave 2s infinite ease-in-out;
+    /* Cinematic Welcome Screen */
+    #intro-screen {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      inset: 0;
+      background: var(--bg-color);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 1.5s ease;
+    }
+
+    .intro-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--text-main);
+      text-align: center;
       opacity: 0;
+      transform: translateY(20px);
+      animation: smoothFadeUp 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
+    }
+
+    .intro-subtitle {
+      font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      opacity: 0;
+      transform: translateY(15px);
+      animation: smoothFadeUp 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 1s;
+    }
+
+    /* Start / Option Buttons */
+    .btn-start {
+      margin-top: 3rem;
+      background: var(--text-main);
+      color: var(--bg-color);
+      border: none;
+      padding: 1rem 2.5rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 50px;
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeInOnly 1.5s ease forwards 1.8s;
+    }
+
+    .btn-start:hover {
+      background: var(--accent-color);
+      color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(255, 74, 125, 0.3);
+    }
+
+    /* Slideshow Container */
+    #gallery-container {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* Dual-Layer Cinematic Slide styling */
+    .slide-wrapper {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .slide-wrapper.active {
+      opacity: 1;
+    }
+
+    /* Layer 1: The Ambient Blur Background */
+    .bg-blur {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(40px) brightness(0.25);
+      transform: scale(1.15);
+      z-index: 1;
+    }
+
+    /* Layer 2: The Sharp Main Artwork */
+    .main-img {
+      position: relative;
+      z-index: 2;
+      max-width: 90vw;
+      max-height: 82vh;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      transform: scale(1.02);
+      transition: transform 7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .slide-wrapper.active .main-img {
+      transform: scale(1);
+    }
+
+    /* Glassmorphic Minimalist Control Dock */
+    .control-dock {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(50px);
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 0.75rem 2rem;
+      border-radius: 100px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .control-dock.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dock-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      transition: all 0.3s ease;
+      border-radius: 50%;
+    }
+
+    .dock-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dock-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Visual Timeline Track */
+    .timeline {
+      width: 120px;
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timeline-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--accent-color);
+      transition: width 0.1s linear;
+    }
+
+    /* Outro Screen */
+    #outro-screen {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-color);
+      z-index: 8;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 2s ease;
     }
 
-    #welcome { opacity: 1; }
-    #thankyou { display: none; }
-
-    @keyframes wave {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      25% { transform: translate(-50%, -50%) rotate(3deg); }
-      50% { transform: translate(-50%, -50%) rotate(0deg); }
-      75% { transform: translate(-50%, -50%) rotate(-3deg); }
-      100% { transform: translate(-50%, -50%) rotate(0deg); }
-    }
-
-    .picture {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 60vw;   /* default for PC */
-      height: auto;
-      max-height: 80vh;
-      transform: translate(-50%, -50%);
-      object-fit: contain;
+    /* Action buttons container in outro */
+    .outro-actions {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 3rem;
       opacity: 0;
-      animation: fadeInOut 6s ease forwards;
+      transform: translateY(20px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-      20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.05); }
+    .outro-actions.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .btn {
-      position: fixed;
-      bottom: 20px;
-      background: #ff3366;
-      color: #fff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      z-index: 1000;
-      outline: none;
-      display: none;
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
     }
 
-    /* 📱 Mobile devices: force full screen images */
-    @media (pointer: coarse) {
-      .picture {
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover;
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text-main);
+      color: var(--text-main);
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
+    }
+
+    /* Friendly fallback close message */
+    #exit-message {
+      margin-top: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      text-align: center;
+      max-width: 80%;
+    }
+
+    /* Keyframe animations */
+    @keyframes smoothFadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-      #welcome, #thankyou {
-        font-size: 3em;
+    }
+
+    @keyframes fadeInOnly {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Mobile Adaptability */
+    @media (max-width: 768px) {
+      .main-img {
+        max-width: 95vw;
+        max-height: 75vh;
+      }
+      .control-dock {
+        width: 90%;
+        justify-content: space-between;
+        padding: 0.75rem 1.5rem;
+      }
+      .timeline {
+        display: none;
+      }
+      .outro-actions {
+        flex-direction: column;
+        gap: 1rem;
+        width: 80%;
+      }
+      .outro-actions .btn-start {
+        margin-top: 0;
+        width: 100%;
+        padding: 0.85rem 2rem;
       }
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="welcome">Welcome to Nina's Photo Gallery</div>
-  <div id="thankyou">Good Luck on your exam!</div>
-  <button id="startBtn" class="btn">Start Slideshow</button>
-  <button id="popBtn" class="btn">Pause Slideshow</button>
 
+  <!-- 1. INTRO / START SCREEN -->
+  <div id="intro-screen">
+    <h1 class="intro-title">Welcome to Nina's Art Gallery</h1>
+    <p class="intro-subtitle">A Collection of Light & Perspective</p>
+    <button id="startBtn" class="btn-start">Begin Exhibition</button>
+  </div>
+
+  <!-- 2. GALLERY CONTAINER (Dynamic Dual-Layer Slides) -->
+  <div id="gallery-container">
+    <div id="slideA" class="slide-wrapper">
+      <div class="bg-blur"></div>
+      <img class="main-img" src="" alt="">
+    </div>
+    <div id="slideB" class="slide-wrapper">
+      <div class="bg-blur"></div>
+      <img class="main-img" src="" alt="">
+    </div>
+  </div>
+
+  <!-- 3. MINIMAL CONTROL DOCK -->
+  <div class="control-dock" id="controlDock">
+    <button class="dock-btn" id="prevBtn" title="Previous">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    </button>
+    
+    <button class="dock-btn" id="playPauseBtn" title="Pause">
+      <svg id="pauseIcon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      <svg id="playIcon" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+
+    <button class="dock-btn" id="nextBtn" title="Next">
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </button>
+
+    <div class="timeline">
+      <div class="timeline-fill" id="timelineFill"></div>
+    </div>
+
+    <button class="dock-btn" id="muteBtn" title="Mute">
+      <svg id="speakerIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <svg id="muteIcon" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+    </button>
+  </div>
+
+  <!-- 4. OUTRO / THANK YOU SCREEN WITH INTERACTIVE CHOICES -->
+  <div id="outro-screen">
+    <h1 class="intro-title">Thank you for watching</h1>
+    <p class="intro-subtitle" style="text-transform: none; letter-spacing: 0.1em; margin-top: 1rem;">Would you like to experience it again?</p>
+    
+    <div class="outro-actions" id="outroActions">
+      <button id="watchAgainBtn" class="btn-start" style="margin-top: 0;">Watch Again</button>
+      <button id="leaveBtn" class="btn-start btn-secondary" style="margin-top: 0;">Leave</button>
+    </div>
+
+    <p id="exit-message"></p>
+  </div>
+
+  <!-- Background Music Asset -->
   <audio id="bgMusic" loop>
     <source src="flower.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
   </audio>
 
   <script>
-    const startBtn = document.getElementById('startBtn');
-    const popBtn = document.getElementById('popBtn');
-    const welcome = document.getElementById('welcome');
-    const thankyou = document.getElementById('thankyou');
-    const bgMusic = document.getElementById('bgMusic');
-
+    // System Configurations
     const images = [
       "1.jpg","2.jpg","3.jpg","4.jpg","5.jpg",
       "6.jpg","7.jpg","8.jpg","9.jpg","10.jpg",
@@ -117,74 +392,280 @@
       "21.jpg","22.jpg","23.jpg","24.jpg","25.jpg",
       "26.jpg"
     ];
+    const slideDuration = 6000; // Time per slide in ms
 
-    let popping = true;
-    let index = 0;
-    let shownCount = 0;
+    // Elements
+    const introScreen = document.getElementById('intro-screen');
+    const outroScreen = document.getElementById('outro-screen');
+    const outroActions = document.getElementById('outroActions');
+    const controlDock = document.getElementById('controlDock');
+    
+    const startBtn = document.getElementById('startBtn');
+    const watchAgainBtn = document.getElementById('watchAgainBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const exitMsg = document.getElementById('exit-message');
 
-    function popPicture() {
-      if (shownCount >= images.length) {
-        endShow();
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const timelineFill = document.getElementById('timelineFill');
+    const bgMusic = document.getElementById('bgMusic');
+
+    // Slide Swapping Engine Nodes
+    const slideA = document.getElementById('slideA');
+    const slideB = document.getElementById('slideB');
+    
+    let currentIndex = 0;
+    let isPlaying = false;
+    let isMuted = false;
+    let totalShown = 0;
+    let currentActiveWrapper = slideA;
+    let currentInactiveWrapper = slideB;
+    
+    // Timer handlers
+    let timelineInterval = null;
+    let timelineProgress = 0;
+
+    // Preload next image to keep performance flawless
+    function preloadImage(url) {
+      const tempImg = new Image();
+      tempImg.src = url;
+    }
+
+    // Set Image sources on targeted wrappers
+    function setWrapperImage(wrapper, index) {
+      const bgBlur = wrapper.querySelector('.bg-blur');
+      const mainImg = wrapper.querySelector('.main-img');
+      bgBlur.style.backgroundImage = `url('${images[index]}')`;
+      mainImg.src = images[index];
+    }
+
+    // Transition Logic between Slide A & Slide B (Cross-fade)
+    function transitionToNext(direction = 'next') {
+      if (totalShown >= images.length && direction === 'next') {
+        endExhibition();
         return;
       }
-      const img = document.createElement('img');
-      img.src = images[index];
-      img.className = 'picture';
-      index = (index + 1) % images.length;
-      shownCount++;
-      document.body.appendChild(img);
-      setTimeout(() => { img.remove(); }, 6000);
+
+      // 1. Set index
+      if (direction === 'next') {
+        currentIndex = (currentIndex + 1) % images.length;
+        totalShown++;
+      } else {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+      }
+
+      // 2. Load next frame onto inactive screen node
+      setWrapperImage(currentInactiveWrapper, currentIndex);
+
+      // 3. Trigger swap
+      currentActiveWrapper.classList.remove('active');
+      currentInactiveWrapper.classList.add('active');
+
+      // 4. Invert wrapper assignments
+      const temp = currentActiveWrapper;
+      currentActiveWrapper = currentInactiveWrapper;
+      currentInactiveWrapper = temp;
+
+      // Reset Timeline for new slide
+      resetTimelineProgress();
+
+      // Preload the next target frame
+      const nextTargetIndex = (currentIndex + 1) % images.length;
+      preloadImage(images[nextTargetIndex]);
     }
 
-    function autoPop() {
-      if (popping) popPicture();
-      setTimeout(autoPop, 6000);
+    // Timeline Tracker Update Loop
+    function startTimeline() {
+      const step = 100 / (slideDuration / 100);
+      timelineInterval = setInterval(() => {
+        if (isPlaying) {
+          timelineProgress += step;
+          timelineFill.style.width = `${Math.min(timelineProgress, 100)}%`;
+          if (timelineProgress >= 100) {
+            transitionToNext('next');
+          }
+        }
+      }, 100);
     }
 
-    setTimeout(() => {
-      welcome.style.opacity = 0;
-      setTimeout(() => {
-        startBtn.style.display = "block";
-      }, 2000);
-    }, 4000);
+    function resetTimelineProgress() {
+      clearInterval(timelineInterval);
+      timelineProgress = 0;
+      timelineFill.style.width = '0%';
+      if (isPlaying) startTimeline();
+    }
 
-    startBtn.addEventListener('click', () => {
-      startBtn.style.display = "none";
-      popBtn.style.display = "block";
-      autoPop();
-      bgMusic.volume = 1;
+    // Presentation States
+    function startShow() {
+      // Setup initial image on First Wrapper
+      setWrapperImage(currentActiveWrapper, currentIndex);
+      currentActiveWrapper.classList.add('active');
+      preloadImage(images[(currentIndex + 1) % images.length]);
+
+      // Hide Intro Screen
+      introScreen.style.opacity = '0';
+      setTimeout(() => introScreen.style.display = 'none', 1500);
+
+      // Reveal Dock Panel
+      setTimeout(() => controlDock.classList.add('visible'), 1000);
+
+      // Audio Playback with smooth initial fade
+      bgMusic.volume = 0;
       bgMusic.play();
+      fadeAudio(bgMusic, 1, 2000);
+
+      isPlaying = true;
+      totalShown = 1;
+      startTimeline();
+    }
+
+    function togglePlayback() {
+      const playIcon = document.getElementById('playIcon');
+      const pauseIcon = document.getElementById('pauseIcon');
+      
+      isPlaying = !isPlaying;
+
+      if (isPlaying) {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+        bgMusic.play();
+        startTimeline();
+      } else {
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        bgMusic.pause();
+        clearInterval(timelineInterval);
+      }
+    }
+
+    function toggleMute() {
+      const speakerIcon = document.getElementById('speakerIcon');
+      const muteIcon = document.getElementById('muteIcon');
+      
+      isMuted = !isMuted;
+      bgMusic.muted = isMuted;
+
+      if (isMuted) {
+        speakerIcon.style.display = 'none';
+        muteIcon.style.display = 'block';
+      } else {
+        speakerIcon.style.display = 'block';
+        muteIcon.style.display = 'none';
+      }
+    }
+
+    // Audio Cross-fader utility
+    function fadeAudio(audio, targetVolume, duration) {
+      const steps = 20;
+      const stepTime = duration / steps;
+      const volumeStep = (targetVolume - audio.volume) / steps;
+      
+      let stepCount = 0;
+      const fader = setInterval(() => {
+        audio.volume = Math.min(Math.max(audio.volume + volumeStep, 0), 1);
+        stepCount++;
+        if (stepCount >= steps) {
+          clearInterval(fader);
+          audio.volume = targetVolume;
+        }
+      }, stepTime);
+    }
+
+    function endExhibition() {
+      isPlaying = false;
+      clearInterval(timelineInterval);
+      controlDock.classList.remove('visible');
+      
+      // Clear exit messages if restarting was used before
+      exitMsg.style.opacity = '0';
+
+      // Bring down outro screen
+      outroScreen.style.opacity = '1';
+      outroScreen.style.pointerEvents = 'auto';
+
+      // Animate outro buttons into view beautifully
+      setTimeout(() => {
+        outroActions.classList.add('visible');
+      }, 1000);
+
+      // Soft audio fadeout to 0
+      fadeAudio(bgMusic, 0, 3000);
+      setTimeout(() => {
+        bgMusic.pause();
+      }, 3100);
+    }
+
+    // Interactive Outro Handlers
+    function restartShow() {
+      // Clean up Outro
+      outroScreen.style.opacity = '0';
+      outroScreen.style.pointerEvents = 'none';
+      outroActions.classList.remove('visible');
+
+      // Reset state counters
+      currentIndex = 0;
+      totalShown = 1;
+      isPlaying = true;
+
+      // Redraw onto Active frame & restart slide timeline
+      setWrapperImage(currentActiveWrapper, currentIndex);
+      currentActiveWrapper.classList.add('active');
+      preloadImage(images[(currentIndex + 1) % images.length]);
+
+      // Bring music back
+      bgMusic.currentTime = 0;
+      bgMusic.play();
+      fadeAudio(bgMusic, 1, 2000);
+
+      // Bring control deck back
+      setTimeout(() => controlDock.classList.add('visible'), 1000);
+
+      // Play
+      resetTimelineProgress();
+    }
+
+    function leaveExhibition() {
+      // Attempt close
+      window.close();
+
+      // If browser security blocks window.close() (standard default defense for standard tabs):
+      exitMsg.innerHTML = "You can safely close this browser window now.<br>Have a beautiful day! ✨";
+      exitMsg.style.opacity = '1';
+    }
+
+    // Event Listeners
+    startBtn.addEventListener('click', startShow);
+    watchAgainBtn.addEventListener('click', restartShow);
+    leaveBtn.addEventListener('click', leaveExhibition);
+
+    playPauseBtn.addEventListener('click', togglePlayback);
+    muteBtn.addEventListener('click', toggleMute);
+    
+    prevBtn.addEventListener('click', () => {
+      if (!isPlaying) togglePlayback();
+      transitionToNext('prev');
+    });
+    
+    nextBtn.addEventListener('click', () => {
+      if (!isPlaying) togglePlayback();
+      transitionToNext('next');
     });
 
-    popBtn.addEventListener('click', () => {
-      popping = !popping;
-      if (popping) {
-        popBtn.textContent = "Pause Slideshow";
-        bgMusic.play();
-      } else {
-        popBtn.textContent = "Resume Slideshow";
-        bgMusic.pause();
+    // Keyboard Shortcuts for desktop convenience
+    window.addEventListener('keydown', (e) => {
+      if (controlDock.classList.contains('visible')) {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlayback();
+        } else if (e.code === 'ArrowRight') {
+          transitionToNext('next');
+        } else if (e.code === 'ArrowLeft') {
+          transitionToNext('prev');
+        }
       }
     });
-
-    function endShow() {
-      popping = false;
-      popBtn.style.display = "none";
-      thankyou.style.display = "block";
-      thankyou.style.opacity = 1;
-
-      let fadeInterval = setInterval(() => {
-        if (bgMusic.volume > 0.05) {
-          bgMusic.volume -= 0.05;
-        } else {
-          clearInterval(fadeInterval);
-          bgMusic.pause();
-          setTimeout(() => {
-            window.close();
-          }, 2000);
-        }
-      }, 300);
-    }
   </script>
 </body>
 </html>
